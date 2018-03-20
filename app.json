@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "fcsd",
+    "name": "Social Sale",
     "description": "This project is really great.",
     "slug": "fcsd",
     "privacy": "public",
@@ -11,7 +11,7 @@
     "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "ios": {

@@ -5,7 +5,15 @@
     "expo": "^25.0.0",
     "react": "16.2.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-25.0.0.tar.gz",
+    "react-native-action-button": "^2.8.4",
+    "react-native-elements": "^0.19.0",
+    "react-native-grid-component": "^1.0.8",
+    "react-native-modal": "^5.3.0",
+    "react-native-orientation-loading-overlay": "^0.1.4",
     "react-native-router-flux": "^4.0.0-beta.28",
+    "react-native-smooth-swipe-list": "^1.4.4",
+    "react-native-super-grid": "^2.1.0",
+    "react-native-textinput-effects": "^0.4.2",
     "react-native-ui-kitten": "^3.0.0"
   },
   "devDependencies": {

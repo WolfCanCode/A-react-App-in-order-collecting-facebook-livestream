@@ -1,19 +1,15 @@
 import React, {Component} from 'react';
 import {
     Alert,
-    Button,
     Text,
     View,
     StyleSheet,
     Image,
-    ImageBackground,
-    ScrollView,
-    ActivityIndicator
+    ScrollView
 } from 'react-native';
 import Expo from 'expo';
 import {RkText, RkTheme, RkCard, RkChoice, RkButton} from 'react-native-ui-kitten';
-import imgBtn from '../assets/images/facebook_btn.png';
-import wallScreen from '../assets/images/wallscreen.png';
+import {Actions} from 'react-native-router-flux';
 
 export default class PageListScreen extends Component {
     constructor(props) {
@@ -68,69 +64,84 @@ export default class PageListScreen extends Component {
 
 function _renderCustomContent(args, page) {
     if (args.isSelected) {
-        alert(page.name);
-        return <RkCard style={{
-            width: 300,
-            height: 300
-        }}>
-            <View rkCardHeader>
-                <Text>{page.name}</Text>
-            </View>
-            <Image
-                rkCardImg
-                source={{
-                uri: 'https://graph.facebook.com/' + page.id + '/picture?width=100&height=100'
+        // subscibe page for using facebook app
+        fetch('https://graph.facebook.com/' + page.id + '/subscribed_apps', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({access_token: page.access_token})
+        }).then((res1) => res1.json()).then((res2) => {
+            Actions.mainPage({page:page});
+        });
+
+    return <RkCard style={{
+        width: 300,
+        height: 300
+    }}>
+        <View rkCardHeader>
+            <Text>{page.name}</Text>
+        </View>
+        <Image
+            rkCardImg
+            source={{
+            uri: 'https://graph.facebook.com/' + page.id + '/picture?type=large'
+        }}/>
+        <View rkCardFooter>
+            <Text>{page.category}</Text>
+        </View>
+    </RkCard>
+} else {
+    return <RkCard style={{
+        width: 300,
+        height: 300
+    }}>
+        <View rkCardHeader>
+            <Text style={{
+                fontWeight: 'bold'
+            }}>{page.name}</Text>
+        </View>
+        <Image
+            rkCardImg
+            source={{
+                uri: 'https://graph.facebook.com/' + page.id + '/picture?type=large'
             }}/>
-            <View rkCardFooter>
-                <Text>{page.category}</Text>
-            </View>
-        </RkCard>
-    } else {
-        return <RkCard style={{
-            width: 300,
-            height: 300
-        }}>
-            <View rkCardHeader>
-                <Text style={{
-                    fontWeight: 'bold'
-                }}>{page.name}</Text>
-            </View>
-            <Image
-                rkCardImg
-                source={{
-                uri: 'https://graph.facebook.com/' + page.id + '/picture?width=100&height=100'
-            }}/>
-            <View rkCardFooter>
-                <Text style={{
-                    fontWeight: 'bold'
-                }}>{page.category}</Text>
-            </View>
-        </RkCard>
-    }
+        <View rkCardFooter>
+            <Text style={{
+                fontWeight: 'bold'
+            }}>{page.category}</Text>
+        </View>
+    </RkCard>
+}
 }
 
-RkTheme.setType('RkText', 'hero', {
-    fontSize: 35,
-    marginTop: 50
+RkTheme
+.setType('RkText', 'hero', {
+fontSize: 35,
+marginTop: 50
 });
 
-RkTheme.setType('RkText', 'normal', {
-    fontSize: 20,
-    marginTop: 30
+RkTheme
+.setType('RkText', 'normal', {
+fontSize: 20,
+marginTop: 30
 });
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    paragraph: {
-        margin: 24,
-        fontSize: 18,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        color: '#34495e'
-    }
+const styles = StyleSheet
+.create({
+container: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#212121'
+},
+paragraph: {
+    margin: 24,
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#34495e'
+}
 });
