@@ -17,10 +17,10 @@ import {
     Badge,
     Header,
     Icon,
-    Card,
-    SearchBar
+    Divider
 } from 'react-native-elements'
 import OrientationLoadingOverlay from 'react-native-orientation-loading-overlay';
+import PTRView from 'react-native-pull-to-refresh';
 
 //img
 const prodImg = require('../../assets/images/avtProd.png');
@@ -38,7 +38,7 @@ const SCREEN_WIDTH = Dimensions
     .width;
 const myUrl = 'http://52.41.8.125'
 
-export default class ClientScreen extends Component {
+export default class OrderScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -51,9 +51,10 @@ export default class ClientScreen extends Component {
             priceProduct: 0,
             okModal: false,
             isAdd: false,
-            delOkModal: false,
+            activeOkModal: false,
             upOkModal: false,
-            searchText: ''
+            searchText: '',
+            loadData : false
         };
 
     }
@@ -63,62 +64,51 @@ export default class ClientScreen extends Component {
         await this.getData();
     }
 
-    async getData(search) {
-        if (!search) 
-            search = '';
-        await fetch(myUrl + '/client?where={"name":{"contains":"' + search + '"}}').then((res1) => res1.json()).then((res2) => {
+    async getData() {
+        this.setState({loadData: false});
+        await fetch(myUrl + '/product_order?where={"isCheck":true}').then((res1) => res1.json()).then((res2) => {
             let list = res2;
             this.rowData = list.map((item, index) => {
                 return {
                     id: index,
                     rowView: getRowView(item),
-                    rightSubView: this.deleteButton(item.id), //optional
                     style: styles.row //optional but recommended to style your rows
                 };
             });
             this.setState({rowData: this.rowData});
             this.setState({isVisible: false});
+            this.setState({loadData: true});
+
         });
+        
     }
 
-    _pickImage = async() => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            allowsEditing: true,
-            aspect: [4, 4]
-        });
+    _refresh= function() {
+        this.getData();
+        return new Promise((resolve) => {
+           if(this.state.loadData) resolve();
+      });
+    }
 
-        if (!result.cancelled) {
-            this.setState({imgProduct: result});
-        }
-    };
-
-    _cancelModal = () => {
-        if (!this.state.modalVisible == false) 
-            this.setState({imgProduct: prodImg, codeProduct: '', nameProduct: '', priceProduct: 0, modalVisible: false});
-        };
     
 
-    _deleteClient = async(id) => {
-        fetch(myUrl + '/client/' + id, {
-            method: 'DELETE',
+    _activeProduct = async(id) => {
+        fetch(myUrl + '/product_order/' + id, {
+            method: 'PUT',
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({isCheck: true})
         }).then((res1) => res1.json()).then((res2) => {
 
-            this.setState({delOkModal: true});
+            this.setState({activeOkModal: true});
             this.getData();
+            
         });
 
     }
 
-    deleteButton(id) {
-        return (<ListItemButton
-            text="Xóa khách hàng"
-            color="RED"
-            onPress={() => this._deleteProduct(id)}/>);
-    }
 
     render() {
         return (
@@ -136,7 +126,7 @@ export default class ClientScreen extends Component {
                     paddingBottom: 10,
                     height: 70
                 }}
-                    backgroundColor="rgb(92,107,192)"
+                    backgroundColor="rgb(255,167,38)"
                     statusBarProps={{
                     barStyle: 'light-content'
                 }}
@@ -146,7 +136,7 @@ export default class ClientScreen extends Component {
                     }
                 } />}
                     centerComponent={{
-                    text: 'Khách hàng',
+                    text: 'Lịch sử',
                     style: {
                         color: '#fff',
                         fontSize: 25
@@ -154,16 +144,7 @@ export default class ClientScreen extends Component {
                 }}
                     rightComponent={{}}/>
 
-                <SearchBar
-                    round
-                    onChangeText={(event) => {
-                    this.getData(event);
-                }}
-                    onClear={() => {
-                    alert('hihi')
-                }}
-                    placeholder='Nhập từ khóa...'/>
-
+                <PTRView onRefresh={this._refresh.bind(this)} >
                 <ScrollView
                     style={{
                     flex: 1,
@@ -176,15 +157,16 @@ export default class ClientScreen extends Component {
                         marginRight: 5,
                         borderBottomColor: 'black',
                         borderBottomWidth: 1,
-                        alignSelf: 'stretch'
                     }}/>
                 </ScrollView>
-                <Modal isVisible={this.state.delOkModal} style={styles.bottomModal}>
+                </PTRView>
+
+                <Modal isVisible={this.state.activeOkModal} style={styles.bottomModal}>
                     <View style={styles.modalContent}>
                         <Text>Xóa thành công</Text>
                         <TouchableOpacity
                             onPress={() => {
-                            this.setState({delOkModal: false})
+                            this.setState({activeOkModal: false})
                         }}>
                             <View style={styles.button}>
                                 <Text>OK</Text>
@@ -198,7 +180,7 @@ export default class ClientScreen extends Component {
                     color="white"
                     indicatorSize="large"
                     messageFontSize={24}
-                    message="Tải khách hàng... 😀😀😀"></OrientationLoadingOverlay>
+                    message="Tải lịch sử... 😀😀😀"></OrientationLoadingOverlay>
             </View>
         );
     }
@@ -207,39 +189,62 @@ export default class ClientScreen extends Component {
 function getRowView(item) {
     return <View
         style={{
-        flexDirection: 'row',
-        flex: 1,
         marginTop: 15,
-        marginBottom: 15
+        marginBottom: 15,
+        flexDirection:"row",
+        height:65
     }}>
+        
+
+        <View style={{flexDirection:'column',flex:4}}>
+        <Text
+            style={{
+            color: 'white',
+            fontSize: 25,
+            flex: 1,
+            marginLeft: 20
+        }}>{item.clientName}</Text>
+        <Badge
+            value={item.clientPhone}
+            textStyle={{
+            color: 'white',
+            fontSize: 15
+        }}
+            style={{
+            flex: 1,
+            alignItems: 'center',
+        }}/>
+        </View>
+        <View style={{flexDirection:'column',flex:3}}>
+        </View>
         <Avatar
             medium
             rounded
             source={{
-            uri: 'https://graph.facebook.com/' + item.fbId + '/picture?type=large'
+            uri: item.prodImage
         }}
             activeOpacity={0.7}
             style={{
-            flex: 3
-        }}/>
+                width:70,height:70
+            }}
+            /> 
+        <View style={{
+            flex: 2,flexDirection:'column'
+        }}>
         <Text
-            style={{
-            color: 'white',
-            fontSize: 20,
-            flex: 5,
-            marginLeft: 20
-        }}>{item.name}</Text>
-        <Badge
-            value={'SĐT: ' + item.phone}
-            textStyle={{
-            color: 'yellow',
-            fontSize: 20
-        }}
-            style={{
-            flex: 5,
-            alignItems: 'center'
-        }}/>
-
+        style={{
+        color: 'white',
+        fontSize: 15,
+        flex: 1,
+    }}>{item.productName}</Text>  
+    <Text
+        style={{
+        color: 'white',
+        fontSize: 25,
+        flex: 2}}>X {item.quantity}
+        </Text>
+    </View>
+    
     </View>;
 }
 

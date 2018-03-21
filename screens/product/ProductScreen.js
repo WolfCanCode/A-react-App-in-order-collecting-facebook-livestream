@@ -37,6 +37,8 @@ const SCREEN_WIDTH = Dimensions
     .get('window')
     .width;
 
+const url = 'http://52.41.8.125';
+
 export default class ProductScreen extends Component {
     constructor(props) {
         super(props);
@@ -63,8 +65,9 @@ export default class ProductScreen extends Component {
     }
 
     async getData(search) {
-        if(!search) search ='';
-        await fetch('http://52.41.8.125/product?where={"code":{"contains":"'+search+'"}}').then((res1) => res1.json()).then((res2) => {
+        if (!search) 
+            search = '';
+        await fetch(url + '/product?where={"name":{"contains":"' + search + '"},"pageid":"' + this.props.page.id + '"}').then((res1) => res1.json()).then((res2) => {
             let list = res2;
             this.rowData = list.map((item, index) => {
                 return {
@@ -106,9 +109,10 @@ export default class ProductScreen extends Component {
         let productParam = {
             name: this.state.nameProduct,
             code: this.state.codeProduct,
-            price: this.state.priceProduct
+            price: this.state.priceProduct,
+            pageId: this.props.page.id
         };
-        fetch('http://52.41.8.125/product/create', {
+        fetch(url + '/product/create', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -123,7 +127,7 @@ export default class ProductScreen extends Component {
                 name: this.state.codeProduct + '.jpg'
             });
 
-            fetch('http://52.41.8.125/product/img/' + res2.id, {
+            fetch(url + '/product/img/' + res2.id, {
                 method: 'POST',
                 body: imgProduct
             }).then((res1) => res1.json()).then((res2) => {
@@ -144,7 +148,7 @@ export default class ProductScreen extends Component {
             code: this.state.codeProduct,
             price: this.state.priceProduct
         };
-        fetch('http://52.41.8.125/product/'+this.state.idProductUpdate, {
+        fetch(url + '/product/' + this.state.idProductUpdate, {
             method: 'PUT',
             headers: {
                 Accept: 'application/json',
@@ -152,28 +156,21 @@ export default class ProductScreen extends Component {
             },
             body: JSON.stringify(productParam)
         }).then((res1) => res1.json()).then((res2) => {
-            // const imgProduct = new FormData();
-            // imgProduct.append('photo', {
-            //     uri: this.state.imgProduct.uri,
-            //     type: 'image/jpeg', // or photo.type
-            //     name: this.state.codeProduct + '.jpg'
-            // });
+            // const imgProduct = new FormData(); imgProduct.append('photo', {     uri:
+            // this.state.imgProduct.uri,     type: 'image/jpeg', // or photo.type     name:
+            // this.state.codeProduct + '.jpg' });
             this.setState({isVisible: false});
             this.setState({upOkModal: true});
             this.getData();
             this._cancelModal();
-            // fetch('http://52.41.8.125/product/img/' + res2.id, {
-            //     method: 'POST',
-            //     body: imgProduct
-            // }).then((res1) => res1.json()).then((res2) => {
-                
-            // });
+            // fetch(url+'/product/img/' + res2.id, {     method: 'POST',     body:
+            // imgProduct }).then((res1) => res1.json()).then((res2) => { });
         });
 
     }
 
     _deleteProduct = async(id) => {
-        fetch('http://52.41.8.125/product/'+id, {
+        fetch(url + '/product/' + id, {
             method: 'DELETE',
             headers: {
                 Accept: 'application/json',
@@ -195,7 +192,9 @@ export default class ProductScreen extends Component {
             this.setState({
                 modalVisible: true,
                 isAdd: false,
-                imgProduct: {uri:item.prodImg},
+                imgProduct: {
+                    uri: item.prodImg
+                },
                 codeProduct: item.code,
                 nameProduct: item.name,
                 priceProduct: item.price,
@@ -205,7 +204,10 @@ export default class ProductScreen extends Component {
     }
 
     deleteButton(id) {
-        return (<ListItemButton text="Xóa sản phẩm" color="RED" onPress={() => this._deleteProduct(id)}/>);
+        return (<ListItemButton
+            text="Xóa sản phẩm"
+            color="RED"
+            onPress={() => this._deleteProduct(id)}/>);
     }
 
     render() {
@@ -234,7 +236,7 @@ export default class ProductScreen extends Component {
                     }
                 } />}
                     centerComponent={{
-                    text: 'PRODUCT',
+                    text: 'Sản phẩm',
                     style: {
                         color: '#fff',
                         fontSize: 25
@@ -245,12 +247,12 @@ export default class ProductScreen extends Component {
                 <SearchBar
                     round
                     onChangeText={(event) => {
-                        this.getData(event);
+                    this.getData(event);
                 }}
                     onClear={() => {
                     alert('hihi')
                 }}
-                    placeholder='Type Here...'/>
+                    placeholder='Nhập từ khóa...'/>
 
                 <ScrollView
                     style={{
@@ -278,7 +280,7 @@ export default class ProductScreen extends Component {
                     color="white"
                     indicatorSize="large"
                     messageFontSize={24}
-                    message="Loading... 😀😀😀"></OrientationLoadingOverlay>
+                    message="Tải sản phẩm... 😀😀😀"></OrientationLoadingOverlay>
 
                 <Modal
                     isVisible={this.state.modalVisible}
@@ -326,7 +328,7 @@ export default class ProductScreen extends Component {
                     }}/>
                     <Kaede
                         label={'Giá tiền'}
-                        value={this.state.priceProduct+''}
+                        value={this.state.priceProduct + ''}
                         onChangeText={(text) => {
                         this.setState({priceProduct: text})
                     }}/>
@@ -449,24 +451,49 @@ function getRowView(item) {
             style={{
             flex: 3
         }}/>
-        <Text
-            style={{
-            color: 'white',
-            fontSize: 20,
-            flex: 5,
-            marginLeft: 20
-        }}>{item.code}
-            - {item.name}</Text>
-        <Badge
-            value={'giá: ' + item.price}
-            textStyle={{
-            color: 'yellow',
-            fontSize: 20
-        }}
+        <View
             style={{
             flex: 5,
-            alignItems: 'center'
-        }}/>
+            flexDirection: 'column'
+        }}>
+            <Text
+                style={{
+                color: 'white',
+                fontSize: 20,
+                flex: 5,
+                marginLeft: 20
+            }}>{item.name}</Text>
+            <Badge
+                value={item.code}
+                textStyle={{
+                color: 'white',
+                fontSize: 10
+            }}
+                containerStyle={{
+                backgroundColor: 'rgb(239,83,80)',
+                width: 50,
+                marginLeft: 25
+            }}
+                style={{
+                flex: 5,
+                alignItems: 'center'
+            }}/>
+        </View>
+        <View style={{flex:1}}></View>
+        <View style={{
+            flex: 3,
+            alignItems: 'center',
+            justifyContent:'center',
+            flexDirection:'row'
+        }}>
+            <Badge
+                value={'giá: ' + item.price}
+                textStyle={{
+                color: 'yellow',
+                fontSize: 15,
+                flex: 1,
+                justifyContent:'flex-end',
+            }}/></View>
     </View>;
 }
 

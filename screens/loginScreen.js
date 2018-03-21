@@ -51,7 +51,6 @@ export default class LoginScreen extends Component {
         <OrientationLoadingOverlay
           visible={this.state.isVisible}
           color="white"
-          indicatorSize="large"
           messageFontSize={24}
           message="Loading... 😀😀😀"></OrientationLoadingOverlay>
       </ImageBackground>

@@ -7,6 +7,8 @@ import MainmenuScreen from './screens/mainMenuScreen'
 import {Router, Scene, ActionConst} from 'react-native-router-flux';
 import ProductScreen from './screens/product/ProductScreen';
 import ClientScreen from './screens/client/ClientScreen';
+import OrderScreen from './screens/order/orderScreen';
+import HistoryScreen from './screens/history/historyScreen';
 
 export default class App extends Component {
   render() {
@@ -20,6 +22,8 @@ export default class App extends Component {
           {/*Product*/}
           <Scene key="productList" component={ProductScreen}  title='productList'  hideNavBar/>
           <Scene key="clientList" component={ClientScreen}  title='clientList'  hideNavBar/>
+          <Scene key="orderList" component={OrderScreen}  title='orderList'  hideNavBar/>
+          <Scene key="historyList" component={HistoryScreen}  title='historyList'  hideNavBar/>
 
         </Scene>
         

@@ -119,7 +119,8 @@ function _renderCustomContent(args, page) {
 RkTheme
 .setType('RkText', 'hero', {
 fontSize: 35,
-marginTop: 50
+marginTop: 50,
+color: 'rgb(33,150,243)'
 });
 
 RkTheme

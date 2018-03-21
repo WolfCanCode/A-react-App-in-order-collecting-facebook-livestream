@@ -28,8 +28,12 @@ import iconHistory from '../assets/images/history.icon.png';
 import iconStatistic from '../assets/images/statistic.icon.png';
 
 import GridView from 'react-native-super-grid';
-import {Font, Expo} from 'expo';
+import {Font, Expo, Permissions, Notifications} from 'expo';
 import {Actions} from 'react-native-router-flux';
+
+//push noti
+const PUSH_ENDPOINT = 'http://52.41.8.125/page/token';
+
 const SCREEN_WIDTH = Dimensions
     .get('window')
     .width;
@@ -45,7 +49,11 @@ export default class MainMenuScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            likes: 25
+            likes: 25,
+            notification: {
+                origin: '',
+                data: {}
+            }
         };
     }
 
@@ -53,6 +61,52 @@ export default class MainMenuScreen extends Component {
     {
         await fetch('https://graph.facebook.com/v2.12/' + this.props.page.id + '?fields=fan_count&&access_token=' + this.props.page.access_token).then((res1) => res1.json()).then((res2) => {
             this.setState({likes: res2.fan_count});
+        });
+    }
+
+    componentWillMount() {
+        this.registerForPushNotificationsAsync();
+        // Handle notifications that are received or selected while the app is open. If
+        // the app was closed and then opened by tapping the notification (rather than
+        // just tapping the app icon to open it), this function will fire on the next
+        // tick after the app starts with thenotification
+        this._notificationSubscription = Notifications.addListener(this._handleNotification);
+
+    }
+
+    _handleNotification = (notification) => {
+        this.setState({notification: notification});
+    };
+
+    registerForPushNotificationsAsync = async() => {
+        const {status: existingStatus} = await Permissions.getAsync(Permissions.NOTIFICATIONS);
+        let finalStatus = existingStatus;
+
+        // only ask if permissions have not already been determined, because iOS won't
+        // necessarily prompt the user a second time.
+        if (existingStatus !== 'granted') {
+            // Android remote notification permissions are granted during the app install,
+            // so this will only ask on iOS
+            const {status} = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+            finalStatus = status;
+        }
+
+        // Stop here if the user did not grant permissions
+        if (finalStatus !== 'granted') {
+            return;
+        }
+
+        // Get the token that uniquely identifies this device
+        let token = await Notifications.getExpoPushTokenAsync();
+        // POST the token to your backend server from where you can retrieve it to send
+        // push notifications.
+        return fetch(PUSH_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({page_id: this.props.page.id, tokenPush: token})
         });
     }
 
@@ -241,12 +295,24 @@ export default class MainMenuScreen extends Component {
                             style={styles.button}
                             onPress={() => {
                             switch (item.code) {
-                                case product: Actions.productList({page: this.props.page}); break;
-                                case client: Actions.clientList({page: this.props.page}); break;
-                                case order: alert(order); break;
-                                case maylove: alert(maylove); break;
-                                case history: alert(history); break;
-                                case statistic: alert(statistic); break;
+                                case product:
+                                    Actions.productList({page: this.props.page});
+                                    break;
+                                case client:
+                                    Actions.clientList({page: this.props.page});
+                                    break;
+                                case order:
+                                    Actions.orderList({page: this.props.page});
+                                    break;
+                                case maylove:
+                                    alert(maylove);
+                                    break;
+                                case history:
+                                Actions.historyList({page: this.props.page});
+                                    break;
+                                case statistic:
+                                    alert(statistic);
+                                    break;
                             };
                         }}>
                             <Image
@@ -259,6 +325,15 @@ export default class MainMenuScreen extends Component {
                         </TouchableOpacity>
                     )}/>
                 </ScrollView>
+                <View
+                    style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                }}>
+                    {/* <Text>Origin: {this.state.notification.origin}</Text>
+                    <Text>Data: {JSON.stringify(this.state.notification.data)}</Text> */}
+                </View>
             </View>
         );
     }

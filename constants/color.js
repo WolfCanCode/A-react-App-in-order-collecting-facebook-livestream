@@ -7,6 +7,7 @@ export const DARK = 'rgb(60, 60, 60)';
 
 export const RED = 'rgb(244,67,54)';
 export const YELLOW = 'rgb(251,192,45)';
+export const ORANGE = 'rgb(255,87,34)';
 
 export default {
     PRIMARY,
@@ -16,5 +17,6 @@ export default {
     MID,
     DARK,
     RED,
-    YELLOW
+    YELLOW,
+    ORANGE
 }
